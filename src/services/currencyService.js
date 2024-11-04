@@ -8,28 +8,30 @@ const getExchangeRate = async (from, to) => {
 
     // Return cached rate if available
     if (cachedRate) {
-        return cachedRate;
+        return `From Cache: ${cachedRate}`;
     }
 
     try {
         const response = await axios.get(`${config.EXCHANGE_API_URL}/${from}`, {
             headers: {
-                'Authorization': `Bearer ${config.API_KEY}` // Use API key in the headers
+                'Authorization': `Bearer ${config.API_KEY}`
             }
         });
-        
-        const rate = response.data.rates[to];
 
-        // Check if the rate is valid
+        const rate = response.data.rates[to];
         if (!rate) {
-            throw new Error('Invalid currency code');
+            const error = new Error('Invalid currency code');
+            error.status = 400;
+            throw error;
         }
 
         // Store the rate in cache
         await cache.set(cacheKey, rate);
         return rate;
     } catch (error) {
-        throw new Error(`Error fetching exchange rate: ${error.message}`);
+        const customError = new Error(`Error fetching exchange rate: ${error.message}`);
+        customError.status = error.response ? error.response.status : 500;
+        throw customError;
     }
 };
 
