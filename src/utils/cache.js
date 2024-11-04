@@ -18,10 +18,6 @@ const client = redis.createClient({
     }
 })();
 
-// client.on('error', (err) => {
-//     console.error('Redis error: ', err);
-// });
-
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
 
@@ -67,7 +63,8 @@ const cache = {
     // set data in cache
     set: async (key, value) => {
         return await setWithTimeout(key, value ,CACHE_EXPIRY);
-    }
+    },
+    client
 };
 
 module.exports = cache;
